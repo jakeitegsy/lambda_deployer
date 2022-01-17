@@ -1,3 +1,7 @@
+from lambda_deployer import LambdaDeployer
+from shutil import make_archive
+from os import system
+
 class LambdaLayer(LambdaDeployer):
 
 	def __init__(self, dependencies, bucket_name=None, profile_name='DEV', name=None):

@@ -1,3 +1,7 @@
+from shutil import make_archive
+from lambda_deployer import LambdaDeployer
+
+
 class LambdaFunction(LambdaDeployer):
 
 	def __init__(self, function_name, bucket_name=None, profile_name=None):
@@ -16,7 +20,7 @@ class LambdaFunction(LambdaDeployer):
 		return f'{self.function_name}.zip'
 
 	def python_filename(self):
-		return f'{self.function_name}.zip'
+		return f'{self.function_name}.py'
 
 	def package_code(self):
 		self.delimiter()

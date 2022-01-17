@@ -1,9 +1,8 @@
 import boto3
 
+from os import remove
+from shutil import rmtree
 
-from os import environ, system, chdir, remove
-from shutil import rmtree, make_archive
-from zipfile import ZipFile
 
 class LambdaDeployer:
 
