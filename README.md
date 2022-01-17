@@ -1,6 +1,9 @@
 # lambda_deployer
 
-Package and Deploy AWS Lambda Functions and Layers
+- Packages and Deploys AWS Lambda Functions and Layers
+- Updates Lambda Functions it exists
+- Downloads Layer dependencies, package and deploy Layer
+- Updates Layer when it exists
 
 ## usage
 

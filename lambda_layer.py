@@ -1,21 +1,15 @@
 from lambda_deployer import LambdaDeployer
 from shutil import make_archive
-from os import system
+from os import system, makedirs, chdir, getcwd
 
 class LambdaLayer(LambdaDeployer):
 
-	def __init__(self, dependencies, bucket_name=None, profile_name='DEV', name=None):
+	def __init__(self, dependencies, bucket_name=None, profile_name=None, name=None):
 		super().__init__(bucket_name=bucket_name, profile_name=profile_name)
 		self.dependencies = dependencies
 		self.set_name(name)
 		self.delete_directory()
 		self.package_layer()
-		self.upload_to_s3()
-		self.delete_previous_layer_version()
-		self.publish_layer()
-		self.delimiter()
-		self.delete_directory()
-		self.delete_zipfile()
 
 	def set_name(self, name):
 		try:
@@ -32,33 +26,42 @@ class LambdaLayer(LambdaDeployer):
 				CompatibleRuntimes=['python3.6', 'python3.7', 'python3.8'],
 				Content={
 					'S3Bucket':  self.s3_bucket,
-					'S3Key': self.s3_key,
+					'S3Key': self.s3_key(),
 				}
 			)
 		except (
-			self.lambda_client.excpetions.ServiceExceptions,
-			self.lambda_client.excpetions.ResourceNotFoundException,
-			self.lambda_client.excpetions.TooManyRequestsException,
-			self.lambda_client.excpetions.InvalidParameterValueException,
-			self.lambda_client.excpetions.CodeStorageExceededException
+			self.lambda_client.exceptions.ServiceExceptions,
+			self.lambda_client.exceptions.ResourceNotFoundException,
+			self.lambda_client.exceptions.TooManyRequestsException,
+			self.lambda_client.exceptions.InvalidParameterValueException,
+			self.lambda_client.exceptions.CodeStorageExceededException
 		) as error:
 			print(f'{message}FAILED::{error}')
 		else:
 			print(f'{message}Success')
 
-	def directory(self):
-		return 'lambda_layer'
+	@staticmethod
+	def directory():
+		return 'lambda_layers'
 
-	def runtime(self):
+	@staticmethod
+	def runtime():
 		return 'python'
+
+	def dependency_path(self):
+		return f'{self.directory()}/{self.name}/{self.runtime()}'
 
 	def package_layer(self):
 		self.delimiter()
 		print(f'Creating Archive for {self.name} Layer')
 		system('python -m pip install -U pip')
+		makedirs(self.dependency_path(), exist_ok=True)
 		for dependency in self.dependencies:
-			system(f'pip install --target ./{self.directory}/{self.runtime()}{dependency} --upgrade')
-		make_archive(self.name, 'zip', root_dir=self.directory(), base_dir=self.runtime())
+			system(f'pip install {dependency} --target ./{self.dependency_path()} --upgrade')
+		chdir(self.directory())
+		make_archive(self.name, 'zip', root_dir=self.name, base_dir=self.runtime())
+		print(f'Created Lambda Layer Package for {self.name} in {getcwd()}')
+
 
 	def zip_filename(self):
 		return f'{self.name}.zip'
@@ -75,10 +78,10 @@ class LambdaLayer(LambdaDeployer):
 				)['LayerVersions']
 			)
 		except (
-			self.lambda_client.excpetions.ServiceExceptions,
-			self.lambda_client.excpetions.ResourceNotFoundException,
-			self.lambda_client.excpetions.TooManyRequestsException,
-			self.lambda_client.excpetions.InvalidParameterValueException,
+			self.lambda_client.exceptions.ServiceExceptions,
+			self.lambda_client.exceptions.ResourceNotFoundException,
+			self.lambda_client.exceptions.TooManyRequestsException,
+			self.lambda_client.exceptions.InvalidParameterValueException,
 			KeyError,
 		) as error:
 			print(f'{message}FAILED::{error}')

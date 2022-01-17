@@ -14,7 +14,6 @@ class LambdaDeployer:
 			region_name=self.region,
 			profile_name=profile_name
 		)
-		self.s3 = self.session.client('s3')
 		self.lambda_client = self.session.client('lambda')
 
 	def delimiter(self):
@@ -25,7 +24,7 @@ class LambdaDeployer:
 
 	def upload_to_s3(self):
 		self.delimiter()
-		print(f"Uploading {self.zip_filename()} to s3://{self.s3_bucket}/{self.directory}...")
+		print(f"Uploading {self.zip_filename()} to s3://{self.s3_bucket}/{self.directory()}...")
 
 	def delete_directory(self):
 		return rmtree(self.directory(), ignore_errors=True)
